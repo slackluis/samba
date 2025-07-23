@@ -1,0 +1,20 @@
+[global]
+        bind interfaces only = yes
+        interfaces = lo ${SAMBA_interface}
+
+        server role = standalone server
+	security = user
+        workgroup = ${SAMBA_workgroup}
+        realm = ${SAMBA_realm}
+
+	guest ok = no
+        map to guest = Bad User
+	load printers = no
+
+[share]
+	path = /srv/samba/share
+	read only = no
+	browseable = yes
+	guest ok = no
+	public = no
+	valid users = smbuser

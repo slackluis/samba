@@ -1,0 +1,1 @@
+*/5 * * * * root /usr/bin/rsync -XAavz --delete-after --password-file=/etc/samba/rsync.secret rsync://sysvol-replication@${RSYNCD_server}/SysVol/ /var/lib/samba/sysvol/

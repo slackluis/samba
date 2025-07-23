@@ -1,0 +1,16 @@
+[global]
+        bind interfaces only = yes
+        interfaces = lo ${SAMBA_interface}
+
+	security = user
+        workgroup = ${SAMBA_workgroup}
+        realm = ${SAMBA_realm}
+
+	guest ok = yes
+
+[share]
+	path = /srv/samba/share
+	read only = no
+	browseable = yes
+	guest ok = yes
+	public = yes

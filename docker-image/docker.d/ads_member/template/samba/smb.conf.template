@@ -1,0 +1,62 @@
+[global]
+        bind interfaces only = yes
+        interfaces = lo ${SAMBA_interface}
+
+	security = ADS
+	workgroup = ${SAMBA_workgroup}
+	realm = ${SAMBA_realm}
+
+	#log file = /var/log/samba/%m.log
+	#log level = 1
+
+	# Default ID mapping configuration for local BUILTIN accounts
+	# and groups on a domain member. The default (*) domain:
+	# - must not overlap with any domain ID mapping configuration!
+	# - must use a read-write-enabled back end, such as tdb.
+	# - Adding just this is not enough
+	# - You must set a DOMAIN backend configuration, see below
+	idmap config * : backend = tdb
+	idmap config * : range = 3000-7999
+
+	# idmap config for the SAMDOM domain
+	idmap config ${SAMBA_workgroup} : backend = rid
+	idmap config ${SAMBA_workgroup} : range = 10000-999999
+	idmap config ${SAMBA_workgroup} : unix_nss_info = yes
+
+	# Template settings for login shell and home directory
+	winbind nss info = template
+	template shell = /bin/false
+	template homedir = /srv/samba/home/%U
+
+	#winbind nss info = rfc2307
+	#winbind trusted domains only = no
+	winbind use default domain = yes
+	winbind enum users = yes
+	winbind enum groups = yes
+
+	kerberos method = secrets and keytab 
+	winbind refresh tickets = true
+
+	#tls verify peer = no_check
+
+	dedicated keytab file = /etc/samba/krb5.keytab
+
+[share]
+	comment = Partilha
+	path = /srv/samba/share
+	browsable = yes
+	guest ok = no
+	read only = no
+	create mask = 0755
+
+[homes]
+	comment = Pastas Pessoais
+	#path = /srv/home
+	browsable = no
+	guest ok = no
+	read only = no
+	valid users = %S
+	hide dot files = yes
+	create mask = 0664
+	directory mask = 0755
+	root preexec = /etc/samba/mkHomedir.sh %U 

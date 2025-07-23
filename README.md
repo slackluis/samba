@@ -1,0 +1,318 @@
+# Samba AD DC Service 
+
+## Purpose
+
+
+## Pulling the Container
+
+[Docker Hub](https://hub.docker.com/repository/docker/slackluis/samba)
+
+```bash
+docker pull slackluis/samba:latest
+```
+
+## Usage
+
+
+## Config
+
+
+## Building from Source
+
+```bash
+DOCKER_TAG=0.1
+
+docker rmi slackluis/samba:${DOCKER_TAG}
+docker build -t slackluis/samba:${DOCKER_TAG} .
+```
+
+## Docker Compose
+
+```YAML
+services:
+
+  smbshare:
+    container_name: smbshare
+    image: slackluis/samba:0.1
+    hostname: smbshare
+    #network_mode: host
+    privileged: true
+    
+    working_dir: /root/docker.d/share
+    stdin_open: true
+    tty: true
+
+    environment:
+       - TZ=Europe/Lisbon
+       
+       - SAMBA_workgroup=WORKGROUP
+       - SAMBA_interface=eth0
+       - SAMBA_zone_transfer=all
+       
+    volumes:
+      - /srv/samba/examples/smbshare/samba/etc:/etc/samba
+      #- /srv/samba/examples/smbshare/supervisor:/etc/supervisor
+      - /srv/samba/examples/smbshare/samba/var:/var/lib/samba
+      - /srv/samba/examples/smbshare/share:/srv/samba/share
+
+    #command: ["/bin/bash", "-c", "tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./setup.sh && tail -f /dev/null"]
+    command: ["/bin/bash", "-c", "./start.sh"]
+    
+    cap_add:
+      - CAP_FOWNER
+    restart: unless-stopped
+    networks:
+      LAN:
+        ipv4_address: 192.168.40.51
+
+  smbuser:
+    container_name: smbuser
+    image: slackluis/samba:0.1
+    hostname: smbuser
+    #network_mode: host
+    privileged: true
+    
+    working_dir: /root/docker.d/user
+    stdin_open: true
+    tty: true
+
+    environment:
+       - TZ=Europe/Lisbon
+       
+       - SAMBA_workgroup=WORKGROUP
+       - SAMBA_interface=eth0
+       - SAMBA_zone_transfer=all
+
+       - NSSWITCH_passwd=extrausers
+       - NSSWITCH_group=extrausers
+       - NSSWITCH_shadow=extrausers
+       
+       - USER_NAME=smbuser
+       - USER_PASS=smbpass
+       - USER_UID=10000
+       - USER_GID=10000
+       
+    volumes:
+      - /srv/samba/examples/smbuser/samba/etc:/etc/samba
+      #- /srv/samba/examples/smbuser/supervisor:/etc/supervisor
+      - /srv/samba/examples/smbuser/samba/var:/var/lib/samba
+      - /srv/samba/examples/smbuser/extrausers:/var/lib/extrausers
+      - /srv/samba/examples/smbuser/share:/srv/samba/share
+
+    #command: ["/bin/bash", "-c", "tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./setup.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./adduser.sh smbuser2 smbpass2 10001 10001"]
+    command: ["/bin/bash", "-c", "./start.sh"]
+
+    cap_add:
+      - CAP_FOWNER
+    restart: unless-stopped
+    networks:
+      LAN:
+        ipv4_address: 192.168.40.52
+
+  
+  smbdcprovision:
+    container_name: smbdcprovision
+    image: slackluis/samba:0.1
+    hostname: smbdcprovision
+    #network_mode: host
+    privileged: true
+    
+    working_dir: /root/docker.d/dc_provision
+    stdin_open: true
+    tty: true
+
+    environment:
+       - TZ=Europe/Lisbon
+       - INIT_USER=administrator
+       - INIT_PASS=Container_AD
+       - INIT_DC_IP=192.168.40.53
+       
+       - SAMBA_workgroup=EXAMPLE
+       - SAMBA_realm=EXAMPLE.LOC
+       - SAMBA_interface=eth0
+       - SAMBA_zone_transfer=all
+       
+       #- KRB5_CONFIG=/etc/samba/krb5.conf
+       - KRB5_realm=EXAMPLE.LOC
+       - KRB5_admin=192.168.40.53
+       - KRB5_kdc=192.168.40.53
+
+       - NSSWITCH_passwd=winbind
+       - NSSWITCH_group=winbind
+       
+       - BIND_forwarders=8.8.8.8; 8.8.4.4;
+       - BIND_allow-query:=any
+
+       #- RSYNCD_server=192.168.40.55
+       - RSYNCD_pass=samba4_ads
+    volumes:
+      - /srv/samba/examples/smbdcprovision/samba/etc:/etc/samba
+      #- /srv/samba/examples/smbdcprovision/supervisor:/etc/supervisor
+      - /srv/samba/examples/smbdcprovision/samba/var:/var/lib/samba
+      - /srv/samba/examples/smbdcprovision/share:/srv/samba/share
+      - /srv/samba/examples/smbdcprovision/bind:/etc/bind
+      
+    #command: ["/bin/bash", "-c", "tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./setup.sh && tail -f /dev/null"]
+    command: ["/bin/bash", "-c", "./start.sh"]
+
+    cap_add:
+      - CAP_FOWNER
+      - SYS_TIME
+      - SYS_ADMIN
+    restart: unless-stopped
+    dns:
+      - 192.168.40.53
+      #- 192.168.40.54
+    dns_search:
+      - example.loc
+    extra_hosts:
+      - "SMBDCPROVISION.example.loc SMBDCPROVISION:192.168.40.53"
+      - "SMBDCJOIN.example.loc SMBDCJOIN:192.168.40.54"
+
+    networks:
+      LAN:
+        ipv4_address: 192.168.40.53
+
+
+  smbdcjoin:
+    container_name: smbdcjoin
+    image: slackluis/samba:0.1
+    hostname: smbdcjoin
+    #network_mode: host
+    privileged: true
+    
+    working_dir: /root/docker.d/dc_join
+    stdin_open: true
+    tty: true
+
+    environment:
+       - TZ=Europe/Lisbon
+
+       - INIT_USER=administrator
+       - INIT_PASS=Container_AD
+       - INIT_DC_IP=192.168.40.53
+       
+       - SAMBA_workgroup=EXAMPLE
+       - SAMBA_realm=EXAMPLE.LOC
+       - SAMBA_interface=eth0
+       - SAMBA_zone_transfer=all
+
+       #- KRB5_CONFIG=/etc/samba/krb5.conf
+       - KRB5_realm=EXAMPLE.LOC
+       - KRB5_admin=192.168.40.53
+       - KRB5_kdc=192.168.40.53
+
+       - NSSWITCH_passwd=winbind
+       - NSSWITCH_group=winbind
+       
+       - BIND_forwarders=8.8.8.8; 8.8.4.4;
+       - BIND_allow-query:=any
+
+       - RSYNCD_server=192.168.40.53
+       - RSYNCD_pass=samba4_ads
+
+    volumes:
+      - /srv/samba/examples/smbdcjoin/samba/etc:/etc/samba
+      #- /srv/samba/examples/smbdcprovision/supervisor:/etc/supervisor
+      - /srv/samba/examples/smbdcjoin/samba/var:/var/lib/samba
+      - /srv/samba/examples/smbdcjoin/share:/srv/samba/share
+      - /srv/samba/examples/smbdcjoin/bind:/etc/bind
+
+
+    #command: ["/bin/bash", "-c", "tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./setup.sh && tail -f /dev/null"]
+    command: ["/bin/bash", "-c", "./start.sh"]
+
+    cap_add:
+      - CAP_FOWNER
+    restart: unless-stopped
+    dns:
+      #- 192.168.40.53 # Setup
+      - 192.168.40.54 # Start
+    dns_search:
+      - example.loc
+    
+    extra_hosts:
+      - "SMBDCPROVISION.example.loc SMBDCPROVISION:192.168.40.53"
+      - "SMBDCJOIN.example.loc SMBDCJOIN:192.168.40.54"
+    networks:
+      LAN:
+        ipv4_address: 192.168.40.54
+
+
+  smbadsmember:
+    container_name: smbadsmember
+    image: slackluis/samba:0.1
+    hostname: smbadsmember
+    privileged: true
+    
+    working_dir: /root/docker.d/ads_member
+    stdin_open: true
+    tty: true
+
+    environment:
+       - TZ=Europe/Lisbon
+       
+       - INIT_USER=administrator
+       - INIT_PASS=Container_AD
+       - INIT_DC_IP=192.168.40.53
+       
+       - SAMBA_workgroup=EXAMPLE
+       - SAMBA_realm=EXAMPLE.LOC
+       - SAMBA_interface=eth0
+       #- SAMBA_zone_transfer=all
+
+       - KRB5_realm=EXAMPLE.LOC
+       - KRB5_admin=192.168.40.53
+       - KRB5_kdc=192.168.40.53
+
+       - NSSWITCH_passwd=winbind
+       - NSSWITCH_group=winbind
+
+    volumes:
+      - /srv/samba/examples/smbadsmember/samba/etc:/etc/samba
+      #- /srv/samba/examples/smbadsmember/supervisor:/etc/supervisor
+      - /srv/samba/examples/smbadsmember/samba/var:/var/lib/samba
+      - /srv/samba/examples/smbadsmember/share:/srv/samba/share
+      - /srv/samba/examples/smbadsmember/home:/srv/samba/home
+    
+    #command: ["/bin/bash", "-c", "tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
+    #command: ["/bin/bash", "-c", "./setup.sh && tail -f /dev/null"]
+    command: ["/bin/bash", "-c", "./start.sh"]
+
+    
+    cap_add:
+      - CAP_FOWNER
+    restart: unless-stopped
+    dns:
+      - 192.168.40.53
+      - 192.168.40.54
+    dns_search:
+      - example.loc
+
+    extra_hosts:
+      - "SMBDCPROVISION.example.loc SMBDCPROVISION:192.168.40.53"
+      - "SMBDCJOIN.example.loc SMBDCJOIN:192.168.40.54"
+      - "SMBADSMEMBER.example.loc SMBADSMEMBER:192.168.40.55"
+    networks:
+      LAN:
+        ipv4_address: 192.168.40.55
+
+
+networks:
+  LAN:
+    external: true
+```
+
+
+## Additional Info
+

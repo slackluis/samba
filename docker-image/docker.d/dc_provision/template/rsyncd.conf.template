@@ -1,0 +1,12 @@
+max connections = 3
+log file = /var/log/rsync.log
+timeout = 300
+secrets file = /etc/rsyncd.secrets
+
+[SysVol]
+path = /var/lib/samba/sysvol
+comment = Samba SysVol Share
+uid = root
+gid = root
+read only = yes
+auth users = sysvol-replication

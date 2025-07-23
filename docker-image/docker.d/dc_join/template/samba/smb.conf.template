@@ -1,0 +1,95 @@
+[global]
+        bind interfaces only = yes
+        interfaces = lo ${SAMBA_interface}
+
+	realm = ${SAMBA_realm}
+	server role = active directory domain controller
+	server services = s3fs, rpc, nbt, wrepl, ldap, cldap, kdc, drepl, winbindd, ntp_signd, kcc, dnsupdate
+	workgroup = ${SAMBA_workgroup}
+
+        # Default ID mapping configuration for local BUILTIN accounts
+        # and groups on a domain member. The default (*) domain:
+        # - must not overlap with any domain ID mapping configuration!
+        # - must use a read-write-enabled back end, such as tdb.
+        # - Adding just this is not enough
+        # - You must set a DOMAIN backend configuration, see below
+#        idmap config * : backend = tdb
+#        idmap config * : range = 3000-7999
+
+        # idmap config for the SAMDOM domain
+#        idmap config ${SAMBA_workgroup} : backend = rid
+#        idmap config ${SAMBA_workgroup} : range = 10000-999999
+#        idmap config ${SAMBA_workgroup} : unix_nss_info = yes
+
+#	log level = 8
+
+        load printers = no
+        show add printer wizard = no
+        printing = bsd
+        printcap name = /dev/null
+        disable spoolss = yes
+
+        idmap_ldb:use rfc2307 = yes
+
+        # INTERNAL DNS BACKEND
+
+        # Don't allow any updates | allow unsigned updates | only allow signed updates
+        #allow dns updates = False | nonsecure | signed
+        #allow dns updates = signed
+
+        # If recursive queries = yes is set, the following is also needed
+        # dns forwarder = 213.13.175.65 212.55.154.174 212.55.154.190 194.65.3.20
+        #dns forwarder = 212.113.191.129
+
+	#acl:search = no
+
+	ntp signd socket directory = /var/run/samba/ntp_signd
+
+#	ldap server require strong auth = no
+	
+	# ERRO "process_usershare_file: stat of /var/lib/samba/usershares failed. No such file or directory"
+	usershare path =
+
+
+#	winbind nss info = rfc2307
+	winbind nss info = template
+
+	winbind normalize names = yes
+#	winbind trusted domains only = no
+	winbind use default domain = yes
+	winbind enum users = yes
+	winbind enum groups = yes
+
+#	template homedir = /home/%D/%U
+	template homedir = /srv/samba/home/%U
+#	template homedir = /home/%U
+#	template shell = /bin/bash
+	template shell = /bin/false
+
+#        ntlm auth = yes 
+#        min protocol = NT1
+	
+	dns zone transfer clients allow = ${SAMBA_zone_transfer}
+
+#        server reject md5 schannel:e808627-b1eb1$ = no
+
+#	dedicated keytab file = /etc/samba/krb5.keytab
+
+[netlogon]
+	path = /var/lib/samba/sysvol/${SAMBA_realm_tolower}/scripts
+	read only = No
+
+[sysvol]
+	path = /var/lib/samba/sysvol
+	read only = No
+
+
+[netlogonadmin]
+	comment = Servico de logon
+	path = /var/lib/samba/sysvol/${SAMBA_realm_tolower}/scripts
+	browseable = no
+	guest ok = no
+	read only = no
+	#share modes = no
+	locking = no
+	valid users = administrator @"domain admins"
