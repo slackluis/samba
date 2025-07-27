@@ -61,4 +61,4 @@ envsubst < ${INIT_WORKDIR}/krb5.conf.template > /etc/krb5.conf
 # /srv/samba/share
 mkdir -p /srv/samba/share
 
-samba-tool domain join ${INIT_DOMAIN_FQDN} DC --dns-backend=BIND9_DLZ --username "${INIT_USER}" --password "${INIT_PASS}"
+samba-tool domain join ${SAMBA_workgroup} DC --dns-backend=BIND9_DLZ --username "${INIT_USER}" --password "${INIT_PASS}"
