@@ -244,8 +244,8 @@ services:
     #restart: on-failure:3
 
     dns:
-      #- 192.168.40.53 # Setup
-      - 192.168.40.54 # Start
+      #- 192.168.40.53 # ./setup.sh
+      - 192.168.40.54 # ./start.sh
     dns_search:
       - example.loc
     
