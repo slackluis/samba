@@ -32,8 +32,10 @@ set -euo pipefail
 INIT_DIR=/root/docker.d/ads_member
 INIT_WORKDIR=${INIT_DIR}/template
 
-#/etc/supervisor/supervisord.conf
-cp ${INIT_WORKDIR}/supervisord.conf.template /etc/supervisor/supervisord.conf
+
+#/etc/supervisor
+cp ${INIT_WORKDIR}/supervisor/supervisord.conf.template /etc/supervisor/supervisord.conf
+cp -pr ${INIT_WORKDIR}/supervisor/conf.d /etc/supervisor/
 
 #/etc/krb5.conf
 export KRB5_realm KRB5_realm_tolower KRB5_admin KRB5_kdc

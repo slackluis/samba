@@ -31,8 +31,9 @@ set -euo pipefail
 INIT_DIR=/root/docker.d/user
 INIT_WORKDIR=${INIT_DIR}/template
 
-#/etc/supervisor/supervisord.conf
-cp ${INIT_WORKDIR}/supervisord.conf.template /etc/supervisor/supervisord.conf
+#/etc/supervisor
+cp ${INIT_WORKDIR}/supervisor/supervisord.conf.template /etc/supervisor/supervisord.conf
+cp -pr ${INIT_WORKDIR}/supervisor/conf.d /etc/supervisor/
 
 #/etc/nsswitch.conf
 export NSSWITCH_group NSSWITCH_passwd NSSWITCH_shadow

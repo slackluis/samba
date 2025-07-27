@@ -31,6 +31,7 @@ docker build -t slackluis/samba:${DOCKER_TAG} .
 ```YAML
 services:
 
+
   smbshare:
     container_name: smbshare
     image: slackluis/samba:0.1
@@ -42,6 +43,8 @@ services:
     stdin_open: true
     tty: true
 
+    mem_limit: 256m
+
     environment:
        - TZ=Europe/Lisbon
        
@@ -50,10 +53,9 @@ services:
        - SAMBA_zone_transfer=all
        
     volumes:
-      - /srv/samba/examples/smbshare/samba/etc:/etc/samba
-      #- /srv/samba/examples/smbshare/supervisor:/etc/supervisor
-      - /srv/samba/examples/smbshare/samba/var:/var/lib/samba
-      - /srv/samba/examples/smbshare/share:/srv/samba/share
+      - /srv/smb/docker/smbshare/samba/etc:/etc/samba
+      - /srv/smb/docker/smbshare/samba/var:/var/lib/samba
+      - /srv/smb/docker/smbshare/share:/srv/samba/share
 
     #command: ["/bin/bash", "-c", "tail -f /dev/null"]
     #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
@@ -61,8 +63,10 @@ services:
     command: ["/bin/bash", "-c", "./start.sh"]
     
     cap_add:
-      - CAP_FOWNER
+      - CAP_FOWNER      
     restart: unless-stopped
+    #restart: on-failure:3
+
     networks:
       LAN:
         ipv4_address: 192.168.40.51
@@ -78,6 +82,8 @@ services:
     stdin_open: true
     tty: true
 
+    mem_limit: 256m
+    
     environment:
        - TZ=Europe/Lisbon
        
@@ -95,11 +101,10 @@ services:
        - USER_GID=10000
        
     volumes:
-      - /srv/samba/examples/smbuser/samba/etc:/etc/samba
-      #- /srv/samba/examples/smbuser/supervisor:/etc/supervisor
-      - /srv/samba/examples/smbuser/samba/var:/var/lib/samba
-      - /srv/samba/examples/smbuser/extrausers:/var/lib/extrausers
-      - /srv/samba/examples/smbuser/share:/srv/samba/share
+      - /srv/smb/docker/smbuser/samba/etc:/etc/samba
+      - /srv/smb/docker/smbuser/samba/var:/var/lib/samba
+      - /srv/smb/docker/smbuser/extrausers:/var/lib/extrausers
+      - /srv/smb/docker/smbuser/share:/srv/samba/share
 
     #command: ["/bin/bash", "-c", "tail -f /dev/null"]
     #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
@@ -110,6 +115,8 @@ services:
     cap_add:
       - CAP_FOWNER
     restart: unless-stopped
+    #restart: on-failure:3
+
     networks:
       LAN:
         ipv4_address: 192.168.40.52
@@ -125,6 +132,8 @@ services:
     working_dir: /root/docker.d/dc_provision
     stdin_open: true
     tty: true
+
+    mem_limit: 765m
 
     environment:
        - TZ=Europe/Lisbon
@@ -151,11 +160,10 @@ services:
        #- RSYNCD_server=192.168.40.55
        - RSYNCD_pass=samba4_ads
     volumes:
-      - /srv/samba/examples/smbdcprovision/samba/etc:/etc/samba
-      #- /srv/samba/examples/smbdcprovision/supervisor:/etc/supervisor
-      - /srv/samba/examples/smbdcprovision/samba/var:/var/lib/samba
-      - /srv/samba/examples/smbdcprovision/share:/srv/samba/share
-      - /srv/samba/examples/smbdcprovision/bind:/etc/bind
+      - /srv/smb/docker/smbdcprovision/samba/etc:/etc/samba
+      - /srv/smb/docker/smbdcprovision/samba/var:/var/lib/samba
+      - /srv/smb/docker/smbdcprovision/share:/srv/samba/share
+      - /srv/smb/docker/smbdcprovision/bind:/etc/bind
       
     #command: ["/bin/bash", "-c", "tail -f /dev/null"]
     #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
@@ -164,9 +172,9 @@ services:
 
     cap_add:
       - CAP_FOWNER
-      - SYS_TIME
-      - SYS_ADMIN
     restart: unless-stopped
+    #restart: on-failure:3
+
     dns:
       - 192.168.40.53
       #- 192.168.40.54
@@ -180,7 +188,6 @@ services:
       LAN:
         ipv4_address: 192.168.40.53
 
-
   smbdcjoin:
     container_name: smbdcjoin
     image: slackluis/samba:0.1
@@ -191,6 +198,8 @@ services:
     working_dir: /root/docker.d/dc_join
     stdin_open: true
     tty: true
+
+    mem_limit: 765m
 
     environment:
        - TZ=Europe/Lisbon
@@ -204,7 +213,6 @@ services:
        - SAMBA_interface=eth0
        - SAMBA_zone_transfer=all
 
-       #- KRB5_CONFIG=/etc/samba/krb5.conf
        - KRB5_realm=EXAMPLE.LOC
        - KRB5_admin=192.168.40.53
        - KRB5_kdc=192.168.40.53
@@ -219,11 +227,10 @@ services:
        - RSYNCD_pass=samba4_ads
 
     volumes:
-      - /srv/samba/examples/smbdcjoin/samba/etc:/etc/samba
-      #- /srv/samba/examples/smbdcprovision/supervisor:/etc/supervisor
-      - /srv/samba/examples/smbdcjoin/samba/var:/var/lib/samba
-      - /srv/samba/examples/smbdcjoin/share:/srv/samba/share
-      - /srv/samba/examples/smbdcjoin/bind:/etc/bind
+      - /srv/smb/docker/smbdcjoin/samba/etc:/etc/samba
+      - /srv/smb/docker/smbdcjoin/samba/var:/var/lib/samba
+      - /srv/smb/docker/smbdcjoin/share:/srv/samba/share
+      - /srv/smb/docker/smbdcjoin/bind:/etc/bind
 
 
     #command: ["/bin/bash", "-c", "tail -f /dev/null"]
@@ -234,6 +241,8 @@ services:
     cap_add:
       - CAP_FOWNER
     restart: unless-stopped
+    #restart: on-failure:3
+
     dns:
       #- 192.168.40.53 # Setup
       - 192.168.40.54 # Start
@@ -247,6 +256,9 @@ services:
       LAN:
         ipv4_address: 192.168.40.54
 
+    depends_on:
+       - smbdcprovision
+
 
   smbadsmember:
     container_name: smbadsmember
@@ -257,6 +269,8 @@ services:
     working_dir: /root/docker.d/ads_member
     stdin_open: true
     tty: true
+
+    mem_limit: 512m
 
     environment:
        - TZ=Europe/Lisbon
@@ -278,11 +292,10 @@ services:
        - NSSWITCH_group=winbind
 
     volumes:
-      - /srv/samba/examples/smbadsmember/samba/etc:/etc/samba
-      #- /srv/samba/examples/smbadsmember/supervisor:/etc/supervisor
-      - /srv/samba/examples/smbadsmember/samba/var:/var/lib/samba
-      - /srv/samba/examples/smbadsmember/share:/srv/samba/share
-      - /srv/samba/examples/smbadsmember/home:/srv/samba/home
+      - /srv/smb/docker/smbadsmember/samba/etc:/etc/samba
+      - /srv/smb/docker/smbadsmember/samba/var:/var/lib/samba
+      - /srv/smb/docker/smbadsmember/share:/srv/samba/share
+      - /srv/smb/docker/smbadsmember/home:/srv/samba/home
     
     #command: ["/bin/bash", "-c", "tail -f /dev/null"]
     #command: ["/bin/bash", "-c", "./reset.sh && tail -f /dev/null"]
@@ -293,6 +306,8 @@ services:
     cap_add:
       - CAP_FOWNER
     restart: unless-stopped
+    #restart: on-failure:3
+
     dns:
       - 192.168.40.53
       - 192.168.40.54
@@ -307,6 +322,8 @@ services:
       LAN:
         ipv4_address: 192.168.40.55
 
+    depends_on:
+       - smbdcjoin
 
 networks:
   LAN:

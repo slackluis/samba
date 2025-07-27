@@ -4,8 +4,6 @@ set -euo pipefail
 
 : "${INIT_USER:=administrator}"
 : "${INIT_PASS:=Admin123!}"
-: "${INIT_DOMAIN:=EXAMPLE}"
-: "${INIT_DOMAIN_FQDN:=EXAMPLE.LOC}"
 : "${INIT_DC_IP:=192.168.1.1}"
 
 : "${KRB5_realm:=EXAMPLE.LOC}"
@@ -30,11 +28,13 @@ set -euo pipefail
 INIT_DIR=/root/docker.d/share
 INIT_WORKDIR=${INIT_DIR}/template
 
+#/etc/supervisor
+cp ${INIT_WORKDIR}/supervisor/supervisord.conf.template /etc/supervisor/supervisord.conf
+cp -pr ${INIT_WORKDIR}/supervisor/conf.d /etc/supervisor/
+
 # /etc/samba/smb.conf
-export INIT_USER INIT_PASS INIT_DOMAIN INIT_DOMAIN_FQDN SAMBA_interface SAMBA_realm SAMBA_realm_tolower SAMBA_workgroup SAMBA_zone_transfer
-SAMBA_realm=${INIT_DOMAIN_FQDN}
+export INIT_USER INIT_PASS SAMBA_interface SAMBA_realm SAMBA_realm_tolower SAMBA_workgroup SAMBA_zone_transfer
 SAMBA_realm_tolower=$(echo "${SAMBA_realm}" | tr '[:upper:]' '[:lower:]')
-SAMBA_workgroup=${INIT_DOMAIN}
 envsubst < ${INIT_WORKDIR}/samba/smb.conf.template > /etc/samba/smb.conf
 
 # /srv/samba/share

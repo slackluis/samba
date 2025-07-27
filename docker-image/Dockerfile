@@ -78,6 +78,11 @@ RUN chmod +x /root/docker.d/ads_member/reset.sh
 RUN chmod +x /root/docker.d/ads_member/setup.sh
 RUN chmod +x /root/docker.d/ads_member/start.sh
 
+COPY docker.d/health.sh /root/docker.d/health.sh
+RUN chmod +x /root/docker.d/health.sh
+
+#HEALTHCHECK --interval=5s --timeout=3s --retries=60 \
+#  CMD nc -z localhost 445 || exit 1
 
 HEALTHCHECK --interval=5s --timeout=3s --retries=60 \
-  CMD nc -z localhost 445 || exit 1
+  CMD /root/docker.d/health.sh

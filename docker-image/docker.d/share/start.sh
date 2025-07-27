@@ -30,7 +30,9 @@ set -euo pipefail
 INIT_DIR=/root/docker.d/share
 INIT_WORKDIR=${INIT_DIR}/template
 
-#/etc/supervisor/supervisord.conf
-cp ${INIT_WORKDIR}/supervisord.conf.template /etc/supervisor/supervisord.conf
+#/etc/supervisor
+cp ${INIT_WORKDIR}/supervisor/supervisord.conf.template /etc/supervisor/supervisord.conf
+cp -pr ${INIT_WORKDIR}/supervisor/conf.d /etc/supervisor/
+
 
 /usr/bin/supervisord -c /etc/supervisor/supervisord.conf

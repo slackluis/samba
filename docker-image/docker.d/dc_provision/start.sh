@@ -31,8 +31,10 @@ set -euo pipefail
 INIT_DIR=/root/docker.d/dc_provision
 INIT_WORKDIR=${INIT_DIR}/template
 
-#/etc/supervisor/supervisord.conf
-cp ${INIT_WORKDIR}/supervisord.conf.template /etc/supervisor/supervisord.conf
+#/etc/supervisor
+cp ${INIT_WORKDIR}/supervisor/supervisord.conf.template /etc/supervisor/supervisord.conf
+cp -pr ${INIT_WORKDIR}/supervisor/conf.d /etc/supervisor/
+
 
 #/etc/krb5.conf
 export KRB5_realm KRB5_realm_tolower KRB5_admin KRB5_kdc
@@ -44,7 +46,7 @@ export NSSWITCH_group NSSWITCH_passwd
 envsubst < ${INIT_WORKDIR}/nsswitch.conf.template > /etc/nsswitch.conf
 
 #/etc/ntp.conf
-cp ${INIT_WORKDIR}/ntp.conf.template /etc/rsyncd.conf
+cp ${INIT_WORKDIR}/ntp.conf.template /etc/ntp.conf
 
 #/etc/samba/rsyncd.conf
 cp ${INIT_WORKDIR}/rsyncd.conf.template /etc/rsyncd.conf
